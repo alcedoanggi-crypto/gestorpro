@@ -1,0 +1,54 @@
+<header class="topbar">
+  <button class="btn btn-icon d-lg-none" id="sidebarToggle" aria-label="Abrir menu">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+
+  <div class="topbar-title">{{ page_title | default('') }}</div>
+
+  <div class="topbar-actions">
+    <button class="btn btn-icon" id="themeToggle" aria-label="Cambiar tema" title="Modo claro / oscuro">
+      <i class="fa-solid fa-moon theme-dark-icon"></i>
+      <i class="fa-solid fa-sun theme-light-icon"></i>
+    </button>
+
+    <div class="dropdown">
+      <button class="btn btn-icon position-relative" data-bs-toggle="dropdown" aria-label="Notificaciones" id="notifBtn">
+        <i class="fa-solid fa-bell"></i>
+        {% if nav_unread %}
+          <span class="notif-dot" id="notifDot">{{ nav_unread if nav_unread < 10 else '9+' }}</span>
+        {% endif %}
+      </button>
+      <div class="dropdown-menu dropdown-menu-end notif-menu shadow">
+        <div class="notif-head">
+          <strong>Notificaciones</strong>
+          <button class="btn btn-link btn-sm p-0" id="markAllRead">Marcar leidas</button>
+        </div>
+        <div class="notif-list" id="notifList">
+          {% for n in nav_notifications %}
+            <a href="{{ n.link or '#' }}" class="notif-item {{ 'unread' if not n.is_read }}">
+              <span class="dot text-bg-{{ n.category }}"></span>
+              <span class="notif-body">
+                {{ n.message }}
+                <small>{{ n.created_at | desde }}</small>
+              </span>
+            </a>
+          {% else %}
+            <div class="notif-empty">Sin notificaciones</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <button class="btn btn-icon" data-bs-toggle="dropdown" aria-label="Cuenta">
+        <span class="avatar sm">{{ current_user.initials }}</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow">
+        <li><span class="dropdown-item-text small text-muted">{{ current_user.email }}</span></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{{ url_for('users.profile') }}"><i class="fa-solid fa-user fa-fw me-2"></i>Mi perfil</a></li>
+        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket fa-fw me-2"></i>Cerrar sesion</a></li>
+      </ul>
+    </div>
+  </div>
+</header>

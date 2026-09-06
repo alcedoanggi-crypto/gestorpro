@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import badge, progress_bar, pager %}
+{% block title %}Proyectos{% endblock %}
+{% block page_title %}Proyectos{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1 class="h3 mb-0">Proyectos</h1>
+  {% if current_user.has_role('admin','gerente') %}
+  <a href="{{ url_for('projects.create') }}" class="btn btn-primary"
+     data-modal-form data-url="{{ url_for('projects.create') }}">
+    <i class="fa-solid fa-plus me-1"></i>Nuevo proyecto
+  </a>
+  {% endif %}
+</div>
+
+<form class="filter-bar" method="get">
+  <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por nombre...">
+  <select name="status" class="form-select" onchange="this.form.submit()">
+    <option value="">Todos los estados</option>
+    {% for value, label in ProjectStatus.choices() %}
+      <option value="{{ value }}" {{ 'selected' if value == status }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-outline-secondary"><i class="fa-solid fa-magnifying-glass"></i></button>
+</form>
+
+<div class="row g-3">
+  {% for p in pagination.items %}
+  <div class="col-md-6 col-xl-4">
+    <a href="{{ url_for('projects.detail', project_id=p.id) }}" class="card project-card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <h2 class="h6 mb-1">{{ p.name }}</h2>
+          {{ badge(p.status_label, bcolor(p.status)) }}
+        </div>
+        <p class="text-muted small text-truncate-2">{{ p.description or 'Sin descripcion' }}</p>
+        <div class="d-flex justify-content-between small text-muted mb-1">
+          <span><i class="fa-regular fa-calendar me-1"></i>{{ p.end_date | fecha }}</span>
+          <span>{{ p.progress }}%</span>
+        </div>
+        {{ progress_bar(p.progress) }}
+        <div class="d-flex justify-content-between align-items-center mt-3 small">
+          <span class="text-muted"><i class="fa-solid fa-list-check me-1"></i>{{ p.open_task_count }}/{{ p.task_count }} tareas</span>
+          {% if p.is_delayed %}<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Retrasado</span>{% endif %}
+        </div>
+      </div>
+    </a>
+  </div>
+  {% else %}
+  <div class="col-12"><div class="empty-state"><i class="fa-solid fa-folder-open"></i><p>No hay proyectos que coincidan.</p></div></div>
+  {% endfor %}
+</div>
+
+{{ pager(pagination, 'projects.index', {'status': status, 'q': q}) }}
+{% endblock %}

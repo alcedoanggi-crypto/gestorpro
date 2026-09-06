@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import badge, progress_bar %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-hero">
+  <div>
+    <h1>Hola, {{ current_user.name.split()[0] }}</h1>
+    <p>Resumen de tu actividad y la de tus proyectos.</p>
+  </div>
+  {% if current_user.has_role('admin','gerente') %}
+  <a href="{{ url_for('projects.create') }}" class="btn btn-light"
+     data-modal-form data-url="{{ url_for('projects.create') }}">
+    <i class="fa-solid fa-plus me-1"></i>Nuevo proyecto
+  </a>
+  {% endif %}
+</div>
+
+<div class="row g-3 stat-row">
+  {% set cards = [
+    ('Proyectos activos', stats.active_projects, 'fa-folder-open', 'primary', false),
+    ('Tareas pendientes', stats.pending_tasks, 'fa-list-check', 'info', false),
+    ('Tareas por vencer', stats.due_soon_tasks, 'fa-hourglass-half', 'warning', true),
+    ('Tareas retrasadas', stats.overdue_tasks, 'fa-triangle-exclamation', 'danger', true)
+  ] %}
+  {% for label, value, icon, color, alert in cards %}
+  <div class="col-6 col-xl-3">
+    <div class="stat-card{{ ' is-alert' if alert and value }}">
+      <span class="stat-icon text-bg-{{ color }}"><i class="fa-solid {{ icon }}"></i></span>
+      <div>
+        <div class="stat-value">{{ value }}</div>
+        <div class="stat-label">{{ label }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-8">
+    <div class="card is-hoverable h-100">
+      <div class="card-header"><i class="fa-solid fa-chart-line me-2"></i>Tareas completadas por mes</div>
+      <div class="card-body"><canvas id="chartMonthly" height="110"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card is-hoverable h-100">
+      <div class="card-header"><i class="fa-solid fa-chart-pie me-2"></i>Estado de tareas</div>
+      <div class="card-body"><canvas id="chartStatus"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card is-hoverable h-100">
+      <div class="card-header d-flex justify-content-between">
+        <span><i class="fa-solid fa-clipboard-list me-2"></i>Mis tareas abiertas</span>
+        <a href="{{ url_for('tasks.index', mias=1) }}" class="small">Ver todas</a>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for t in my_open_tasks %}
+        <a href="{{ url_for('tasks.detail', task_id=t.id) }}" class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            <span class="d-block">{{ t.title }}</span>
+            <small class="text-muted">{{ t.project.name }}</small>
+          </span>
+          <span class="text-end">
+            {{ badge(t.priority_label, bcolor(t.priority)) }}
+            <small class="d-block {{ 'text-danger' if t.is_overdue }}">{{ t.due_date | fecha }}</small>
+          </span>
+        </a>
+        {% else %}
+        <div class="list-group-item text-muted">No tienes tareas pendientes. 🎉</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card is-hoverable h-100">
+      <div class="card-header"><i class="fa-solid fa-clock-rotate-left me-2"></i>Proyectos recientes</div>
+      <div class="list-group list-group-flush">
+        {% for p in recent_projects %}
+        <a href="{{ url_for('projects.detail', project_id=p.id) }}" class="list-group-item">
+          <div class="d-flex justify-content-between">
+            <strong>{{ p.name }}</strong>
+            {{ badge(p.status_label, bcolor(p.status)) }}
+          </div>
+          <div class="mt-2">{{ progress_bar(p.progress) }}</div>
+        </a>
+        {% else %}
+        <div class="list-group-item text-muted">Aun no hay proyectos.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if delayed %}
+<div class="card mt-3 border-danger-subtle">
+  <div class="card-header text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Tareas retrasadas</div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0 align-middle">
+      <thead><tr><th>Tarea</th><th>Proyecto</th><th>Responsable</th><th>Vencio</th></tr></thead>
+      <tbody>
+        {% for t in delayed %}
+        <tr>
+          <td><a href="{{ url_for('tasks.detail', task_id=t.id) }}">{{ t.title }}</a></td>
+          <td>{{ t.project.name }}</td>
+          <td>{{ t.assignee.name if t.assignee else '—' }}</td>
+          <td class="text-danger">{{ t.due_date | fecha }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.GP_CHARTS = {
+    monthly: {{ charts.monthly | tojson }},
+    status: {{ charts.status | tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% set bp = request.blueprint %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <i class="fa-solid fa-diagram-project"></i>
+    <span>GestorPro</span>
+    <button class="btn btn-sm sidebar-close d-lg-none" id="sidebarClose" aria-label="Cerrar menu">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{{ url_for('dashboard.index') }}" class="nav-link {{ 'active' if bp == 'dashboard' }}">
+      <i class="fa-solid fa-gauge-high fa-fw"></i><span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('projects.index') }}" class="nav-link {{ 'active' if bp == 'projects' }}">
+      <i class="fa-solid fa-folder-open fa-fw"></i><span>Proyectos</span>
+    </a>
+    <a href="{{ url_for('tasks.index') }}" class="nav-link {{ 'active' if bp == 'tasks' }}">
+      <i class="fa-solid fa-list-check fa-fw"></i><span>Tareas</span>
+    </a>
+
+    {% if current_user.has_role('admin', 'gerente') %}
+      <div class="nav-section">Gestion</div>
+      <a href="{{ url_for('reports.index') }}" class="nav-link {{ 'active' if bp == 'reports' }}">
+        <i class="fa-solid fa-chart-pie fa-fw"></i><span>Reportes</span>
+      </a>
+      <a href="{{ url_for('teams.index') }}" class="nav-link {{ 'active' if bp == 'teams' }}">
+        <i class="fa-solid fa-users fa-fw"></i><span>Equipos</span>
+      </a>
+    {% endif %}
+
+    {% if current_user.is_admin %}
+      <div class="nav-section">Administracion</div>
+      <a href="{{ url_for('users.index') }}" class="nav-link {{ 'active' if bp == 'users' and request.endpoint != 'users.profile' }}">
+        <i class="fa-solid fa-user-gear fa-fw"></i><span>Usuarios</span>
+      </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="{{ url_for('users.profile') }}" class="user-chip">
+      <span class="avatar">{{ current_user.initials }}</span>
+      <span class="user-meta">
+        <strong>{{ current_user.name }}</strong>
+        <small>{{ current_user.role.name | capitalize }}</small>
+      </span>
+    </a>
+  </div>
+</aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>

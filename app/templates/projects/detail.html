@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import badge, progress_bar, delete_form %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block page_title %}Proyectos{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <h1 class="h3 mb-0">{{ project.name }}</h1>
+      {{ badge(project.status_label, bcolor(project.status)) }}
+      {{ badge(project.priority_label, bcolor(project.priority)) }}
+    </div>
+    <p class="text-muted mb-0">{{ project.description or 'Sin descripcion' }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    {% if can_edit %}
+      <a href="{{ url_for('tasks.create', project=project.id) }}" class="btn btn-primary"
+         data-modal-form data-url="{{ url_for('tasks.create', project=project.id) }}">
+        <i class="fa-solid fa-plus me-1"></i>Tarea
+      </a>
+      <a href="{{ url_for('projects.edit', project_id=project.id) }}" class="btn btn-outline-secondary"
+         data-modal-form data-url="{{ url_for('projects.edit', project_id=project.id) }}" title="Editar proyecto">
+        <i class="fa-solid fa-pen"></i>
+      </a>
+      <button type="button" class="btn btn-outline-danger" title="Eliminar proyecto"
+              data-modal-confirm
+              data-url="{{ url_for('projects.delete', project_id=project.id) }}"
+              data-title="Eliminar proyecto"
+              data-message="Se eliminara «{{ project.name }}» y todas sus tareas. Esta accion no se puede deshacer.">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="mini-card"><span>Avance</span><strong>{{ project.progress }}%</strong>{{ progress_bar(project.progress) }}</div></div>
+  <div class="col-md-3"><div class="mini-card"><span>Tareas abiertas</span><strong>{{ project.open_task_count }}</strong></div></div>
+  <div class="col-md-3"><div class="mini-card"><span>Vencidas</span><strong class="text-danger">{{ project.overdue_task_count }}</strong></div></div>
+  <div class="col-md-3"><div class="mini-card"><span>Responsable</span><strong>{{ project.manager.name if project.manager else '—' }}</strong>
+    <small class="text-muted">{{ project.start_date | fecha }} → {{ project.end_date | fecha }}</small></div></div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span><i class="fa-solid fa-chart-gantt me-2"></i>Cronograma (Gantt)</span>
+    <div class="d-flex align-items-center gap-2">
+      <div class="btn-group btn-group-sm" role="group" id="ganttModes">
+        <button class="btn btn-outline-secondary" data-mode="Day">Dia</button>
+        <button class="btn btn-outline-secondary active" data-mode="Week">Semana</button>
+        <button class="btn btn-outline-secondary" data-mode="Month">Mes</button>
+      </div>
+      {% if gantt_tasks %}
+      <a href="{{ url_for('projects.gantt_pdf', project_id=project.id) }}"
+         class="btn btn-sm btn-outline-danger" target="_blank" rel="noopener">
+        <i class="fa-solid fa-file-pdf me-1"></i>PDF
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card-body">
+    {% if gantt_tasks %}
+      <div class="gantt-scroll"><svg id="gantt"></svg></div>
+      <p class="text-muted small mt-2 mb-0"><i class="fa-solid fa-circle-info me-1"></i>
+        {% if can_edit %}Arrastra las barras para reprogramar fechas.{% else %}Solo lectura.{% endif %}</p>
+    {% else %}
+      <div class="empty-state"><i class="fa-solid fa-chart-gantt"></i><p>Aun no hay tareas para mostrar en el cronograma.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><i class="fa-solid fa-list-check me-2"></i>Tareas ({{ project.task_count }})</div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Tarea</th><th>Estado</th><th>Prioridad</th><th>Responsable</th><th>Vence</th><th>Avance</th></tr></thead>
+      <tbody>
+        {% for t in project.tasks %}
+        <tr class="{{ 'table-danger' if t.is_overdue }}">
+          <td><a href="{{ url_for('tasks.detail', task_id=t.id) }}">{{ t.title }}</a></td>
+          <td>{{ badge(t.status_label, bcolor(t.status)) }}</td>
+          <td>{{ badge(t.priority_label, bcolor(t.priority)) }}</td>
+          <td>{{ t.assignee.name if t.assignee else '—' }}</td>
+          <td>{{ t.due_date | fecha }}</td>
+          <td style="min-width:120px">{{ progress_bar(t.progress) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-muted text-center py-4">Sin tareas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.GP_GANTT = {
+    tasks: {{ gantt_tasks | tojson }},
+    canEdit: {{ 'true' if can_edit else 'false' }},
+    scheduleUrl: "{{ url_for('api.reschedule_task', task_id=0) }}"
+  };
+</script>
+<script src="{{ url_for('static', filename='js/gantt.js') }}"></script>
+{% endblock %}

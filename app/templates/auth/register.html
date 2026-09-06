@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Crear cuenta{% endblock %}
+
+{% block auth_content %}
+<div class="auth-split">
+  {% include 'partials/auth_aside.html' %}
+
+  <div class="auth-form-side">
+    <div class="auth-card">
+      <div class="auth-mobile-logo"><i class="fa-solid fa-diagram-project"></i> GestorPro</div>
+
+      <h1>Crea tu cuenta</h1>
+      <p class="sub">La primera cuenta del sistema será la de administrador.</p>
+
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="auth-field">
+          {{ form.name.label }}
+          <div class="auth-input">
+            <i class="fa-solid fa-user"></i>
+            {{ form.name(class="form-control" ~ (" is-invalid" if form.name.errors), placeholder="Nombre y apellido") }}
+          </div>
+          {% for e in form.name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="auth-field">
+          {{ form.email.label }}
+          <div class="auth-input">
+            <i class="fa-solid fa-envelope"></i>
+            {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors), placeholder="tucorreo@empresa.com") }}
+          </div>
+          {% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="row g-2">
+          <div class="col-md-6 auth-field">
+            {{ form.password.label }}
+            <div class="auth-input">
+              <i class="fa-solid fa-lock"></i>
+              {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors), placeholder="••••••••") }}
+            </div>
+            {% for e in form.password.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-6 auth-field">
+            {{ form.confirm.label }}
+            <div class="auth-input">
+              <i class="fa-solid fa-lock"></i>
+              {{ form.confirm(class="form-control" ~ (" is-invalid" if form.confirm.errors), placeholder="••••••••") }}
+            </div>
+            {% for e in form.confirm.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth mt-2">Crear cuenta</button>
+      </form>
+
+      <div class="auth-divider">o</div>
+      <p class="auth-alt mt-0">
+        ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

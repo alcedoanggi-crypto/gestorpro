@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import field %}
+{% block title %}Mi perfil{% endblock %}
+{% block page_title %}Mi perfil{% endblock %}
+
+{% block content %}
+<div class="page-head"><h1 class="h3 mb-0">Mi perfil</h1></div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card"><div class="card-body text-center">
+      <span class="avatar xl mx-auto">{{ current_user.initials }}</span>
+      <h2 class="h5 mt-3 mb-0">{{ current_user.name }}</h2>
+      <p class="text-muted">{{ current_user.email }}</p>
+      <span class="badge text-bg-primary">{{ current_user.role.name | capitalize }}</span>
+    </div></div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card"><div class="card-body">
+      <form method="post" novalidate class="row g-3">
+        {{ form.hidden_tag() }}
+        {{ field(form.name, cols="col-md-6") }}
+        {{ field(form.job_title, cols="col-md-6") }}
+        {{ field(form.avatar_url, cols="col-12") }}
+        <div class="col-12"><hr><h3 class="h6 text-muted">Cambiar contrasena</h3></div>
+        {{ field(form.current_password, cols="col-md-6") }}
+        {{ field(form.new_password, cols="col-md-6") }}
+        <div class="col-12">{{ form.submit(class="btn btn-primary") }}</div>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

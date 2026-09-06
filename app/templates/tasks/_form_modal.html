@@ -1,0 +1,42 @@
+{% from 'partials/_macros.html' import field %}
+<div class="modal-content gp-modal">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fa-solid {{ 'fa-pen' if task else 'fa-list-check' }} me-2"></i>
+      {{ 'Editar tarea' if task else 'Nueva tarea' }}
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+  </div>
+
+  <form method="post" novalidate class="modal-ajax-form"
+        action="{{ url_for('tasks.edit', task_id=task.id) if task else url_for('tasks.create') }}">
+    {{ form.hidden_tag() }}
+    <div class="modal-body">
+      {% if form.errors %}
+        <div class="alert alert-danger py-2 small mb-3">
+          <i class="fa-solid fa-circle-exclamation me-1"></i>Revisa los campos marcados.
+        </div>
+      {% endif %}
+      <div class="row g-3">
+        {{ field(form.title, cols="col-12") }}
+        {{ field(form.description, cols="col-12") }}
+        {{ field(form.project_id, cols="col-md-6") }}
+        {{ field(form.assignee_id, cols="col-md-6") }}
+        {{ field(form.status, cols="col-md-4") }}
+        {{ field(form.priority, cols="col-md-4") }}
+        {{ field(form.progress, cols="col-md-4") }}
+        {{ field(form.start_date, cols="col-md-4") }}
+        {{ field(form.due_date, cols="col-md-4") }}
+        {{ field(form.estimated_hours, cols="col-md-4") }}
+        {{ field(form.dependencies, cols="col-12") }}
+        <div class="col-12"><small class="text-muted">Manten Ctrl para seleccionar varias dependencias.</small></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check me-1"></i>{{ 'Guardar cambios' if task else 'Crear tarea' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import field %}
+{% block title %}{{ 'Editar' if team else 'Nuevo' }} equipo{% endblock %}
+{% block page_title %}Equipos{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1 class="h3 mb-0">{{ 'Editar equipo' if team else 'Nuevo equipo' }}</h1>
+  <a href="{{ url_for('teams.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i>Volver</a>
+</div>
+
+<div class="card"><div class="card-body">
+  <form method="post" novalidate class="row g-3">
+    {{ form.hidden_tag() }}
+    {{ field(form.name, cols="col-md-6") }}
+    {{ field(form.description, cols="col-12") }}
+    {{ field(form.member_ids, cols="col-12") }}
+    <div class="col-12"><small class="text-muted">Manten Ctrl para seleccionar varios integrantes.</small></div>
+    <div class="col-12">{{ form.submit(class="btn btn-primary") }}</div>
+  </form>
+</div></div>
+{% endblock %}

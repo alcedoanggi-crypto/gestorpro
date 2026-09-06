@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import badge, progress_bar, pager %}
+{% block title %}Tareas{% endblock %}
+{% block page_title %}Tareas{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1 class="h3 mb-0">Tareas</h1>
+  {% if current_user.has_role('admin','gerente') %}
+  <a href="{{ url_for('tasks.create') }}" class="btn btn-primary"
+     data-modal-form data-url="{{ url_for('tasks.create') }}">
+    <i class="fa-solid fa-plus me-1"></i>Nueva tarea
+  </a>
+  {% endif %}
+</div>
+
+<form class="filter-bar" method="get">
+  <select name="project" class="form-select" onchange="this.form.submit()">
+    <option value="">Todos los proyectos</option>
+    {% for p in projects %}
+      <option value="{{ p.id }}" {{ 'selected' if p.id == project_id }}>{{ p.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="status" class="form-select" onchange="this.form.submit()">
+    <option value="">Cualquier estado</option>
+    {% for value, label in TaskStatus.choices() %}
+      <option value="{{ value }}" {{ 'selected' if value == status }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <div class="form-check form-switch ms-2 align-self-center">
+    <input class="form-check-input" type="checkbox" name="mias" value="1" id="mias" {{ 'checked' if mine }} onchange="this.form.submit()">
+    <label class="form-check-label" for="mias">Solo mias</label>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Tarea</th><th>Proyecto</th><th>Estado</th><th>Prioridad</th><th>Responsable</th><th>Vence</th><th>Avance</th></tr></thead>
+      <tbody>
+        {% for t in pagination.items %}
+        <tr class="{{ 'table-danger' if t.is_overdue }}">
+          <td><a href="{{ url_for('tasks.detail', task_id=t.id) }}">{{ t.title }}</a></td>
+          <td class="small">{{ t.project.name }}</td>
+          <td>{{ badge(t.status_label, bcolor(t.status)) }}</td>
+          <td>{{ badge(t.priority_label, bcolor(t.priority)) }}</td>
+          <td class="small">{{ t.assignee.name if t.assignee else '—' }}</td>
+          <td class="small {{ 'text-danger fw-semibold' if t.is_overdue }}">{{ t.due_date | fecha }}</td>
+          <td style="min-width:120px">{{ progress_bar(t.progress) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No hay tareas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pager(pagination, 'tasks.index', {'status': status, 'project': project_id or '', 'mias': '1' if mine else ''}) }}
+{% endblock %}

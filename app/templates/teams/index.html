@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% from 'partials/_macros.html' import delete_form %}
+{% block title %}Equipos{% endblock %}
+{% block page_title %}Equipos{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1 class="h3 mb-0">Equipos</h1>
+  <a href="{{ url_for('teams.create') }}" class="btn btn-primary"
+     data-modal-form data-url="{{ url_for('teams.create') }}">
+    <i class="fa-solid fa-plus me-1"></i>Nuevo equipo
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for team in teams %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100"><div class="card-body">
+      <div class="d-flex justify-content-between">
+        <h2 class="h6">{{ team.name }}</h2>
+        <span class="badge text-bg-secondary">{{ team.member_count }} integrantes</span>
+      </div>
+      <p class="text-muted small">{{ team.description or 'Sin descripcion' }}</p>
+      <div class="avatar-stack mb-3">
+        {% for m in team.members[:6] %}<span class="avatar sm" title="{{ m.name }}">{{ m.initials }}</span>{% endfor %}
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('teams.edit', team_id=team.id) }}" class="btn btn-sm btn-outline-secondary"
+           data-modal-form data-url="{{ url_for('teams.edit', team_id=team.id) }}">
+          <i class="fa-solid fa-pen me-1"></i>Editar
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar equipo"
+                data-modal-confirm
+                data-url="{{ url_for('teams.delete', team_id=team.id) }}"
+                data-title="Eliminar equipo"
+                data-message="Se eliminara el equipo «{{ team.name }}».">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </div></div>
+  </div>
+  {% else %}
+  <div class="col-12"><div class="empty-state"><i class="fa-solid fa-users"></i><p>Aun no hay equipos.</p></div></div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Reportes{% endblock %}
+{% block page_title %}Reportes{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1 class="h3 mb-0">Reportes</h1>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('reports.export_excel', status=status) }}" class="btn btn-outline-success"><i class="fa-solid fa-file-excel me-1"></i>Excel</a>
+    <a href="{{ url_for('reports.export_pdf', status=status) }}" class="btn btn-outline-danger"><i class="fa-solid fa-file-pdf me-1"></i>PDF</a>
+  </div>
+</div>
+
+<form class="filter-bar" method="get">
+  <select name="status" class="form-select" onchange="this.form.submit()">
+    <option value="">Todos los proyectos</option>
+    {% for value, label in ProjectStatus.choices() %}
+      <option value="{{ value }}" {{ 'selected' if value == status }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="row g-3 stat-row mb-1">
+  {% set cards = [
+    ('Proyectos', stats.total_projects, 'primary'),
+    ('Activos', stats.active_projects, 'success'),
+    ('Retrasados', stats.delayed_projects, 'danger'),
+    ('Tareas pendientes', stats.pending_tasks, 'info'),
+    ('Cumplidas', stats.done_tasks, 'secondary')
+  ] %}
+  {% for label, value, color in cards %}
+  <div class="col"><div class="stat-card"><div>
+    <div class="stat-value">{{ value }}</div><div class="stat-label">{{ label }}</div>
+  </div></div></div>
+  {% endfor %}
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card h-100"><div class="card-header">Progreso por proyecto</div>
+    <div class="card-body"><canvas id="cProgress" height="140"></canvas></div></div></div>
+  <div class="col-lg-6"><div class="card h-100"><div class="card-header">Carga de trabajo por usuario</div>
+    <div class="card-body"><canvas id="cWorkload" height="140"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">Estado de tareas</div>
+    <div class="card-body"><canvas id="cStatus"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">Cumplimiento de plazos</div>
+    <div class="card-body"><canvas id="cCompliance"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">Prioridad (tareas abiertas)</div>
+    <div class="card-body"><canvas id="cPriority"></canvas></div></div></div>
+  <div class="col-12"><div class="card"><div class="card-header">Tareas completadas por mes</div>
+    <div class="card-body"><canvas id="cMonthly" height="90"></canvas></div></div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.GP_REPORTS = {{ charts | tojson }};</script>
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

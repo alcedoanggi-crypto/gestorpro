@@ -1,0 +1,56 @@
+{# Renderizado consistente de campos WTForms con Bootstrap 5 #}
+{% macro field(f, cols=None, placeholder="") %}
+  {% set is_select = f.type in ('SelectField', 'SelectMultipleField') %}
+  {% set is_check = f.type == 'BooleanField' %}
+  <div class="{{ cols or 'col-12' }}">
+    {% if is_check %}
+      <div class="form-check form-switch mt-2">
+        {{ f(class="form-check-input" ~ (" is-invalid" if f.errors)) }}
+        {{ f.label(class="form-check-label") }}
+      </div>
+    {% else %}
+      {{ f.label(class="form-label") }}
+      {{ f(class=(("form-select" if is_select else "form-control")) ~ (" is-invalid" if f.errors), placeholder=placeholder) }}
+    {% endif %}
+    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro badge(text, color) %}
+  <span class="badge text-bg-{{ color }}">{{ text }}</span>
+{% endmacro %}
+
+{% macro progress_bar(value) %}
+  <div class="progress" style="height:8px;" role="progressbar" aria-valuenow="{{ value }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar" style="width: {{ value }}%"></div>
+  </div>
+{% endmacro %}
+
+{% macro delete_form(action, label="Eliminar", message="Esta accion no se puede deshacer.") %}
+  <form method="post" action="{{ action }}" class="d-inline js-confirm" data-message="{{ message }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-sm btn-outline-danger">
+      <i class="fa-solid fa-trash-can"></i> {{ label }}
+    </button>
+  </form>
+{% endmacro %}
+
+{% macro pager(p, endpoint, args={}) %}
+  {% if p.pages > 1 %}
+  <nav class="mt-3"><ul class="pagination pagination-sm mb-0">
+    <li class="page-item {{ 'disabled' if not p.has_prev }}">
+      <a class="page-link" href="{{ url_for(endpoint, page=p.prev_num, **args) }}">&laquo;</a>
+    </li>
+    {% for n in p.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if n %}
+      <li class="page-item {{ 'active' if n == p.page }}">
+        <a class="page-link" href="{{ url_for(endpoint, page=n, **args) }}">{{ n }}</a>
+      </li>
+      {% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% endfor %}
+    <li class="page-item {{ 'disabled' if not p.has_next }}">
+      <a class="page-link" href="{{ url_for(endpoint, page=p.next_num, **args) }}">&raquo;</a>
+    </li>
+  </ul></nav>
+  {% endif %}
+{% endmacro %}

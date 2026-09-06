@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}No encontrado{% endblock %}
+{% block page_title %}Error 404{% endblock %}
+{% block content %}
+<div class="empty-state py-5"><i class="fa-solid fa-compass"></i>
+  <h1 class="h4">404 — Pagina no encontrada</h1>
+  <p class="text-muted">La direccion que buscas no existe o cambio de lugar.</p>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Ir al dashboard</a>
+</div>
+{% endblock %}
+{% block auth_content %}
+<div class="auth-card text-center"><h1 class="h4">404</h1><p>Pagina no encontrada.</p>
+<a href="{{ url_for('auth.login') }}" class="btn btn-primary">Iniciar sesion</a></div>
+{% endblock %}

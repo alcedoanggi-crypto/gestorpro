@@ -1,0 +1,38 @@
+{% from 'partials/_macros.html' import field %}
+<div class="modal-content gp-modal">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fa-solid {{ 'fa-pen' if project else 'fa-folder-plus' }} me-2"></i>
+      {{ 'Editar proyecto' if project else 'Nuevo proyecto' }}
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+  </div>
+
+  <form method="post" novalidate class="modal-ajax-form"
+        action="{{ url_for('projects.edit', project_id=project.id) if project else url_for('projects.create') }}">
+    {{ form.hidden_tag() }}
+    <div class="modal-body">
+      {% if form.errors %}
+        <div class="alert alert-danger py-2 small mb-3">
+          <i class="fa-solid fa-circle-exclamation me-1"></i>Revisa los campos marcados.
+        </div>
+      {% endif %}
+      <div class="row g-3">
+        {{ field(form.name, cols="col-12") }}
+        {{ field(form.description, cols="col-12") }}
+        {{ field(form.status, cols="col-md-6") }}
+        {{ field(form.priority, cols="col-md-6") }}
+        {{ field(form.manager_id, cols="col-md-6") }}
+        {{ field(form.team_id, cols="col-md-6") }}
+        {{ field(form.start_date, cols="col-md-6") }}
+        {{ field(form.end_date, cols="col-md-6") }}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check me-1"></i>{{ 'Guardar cambios' if project else 'Crear proyecto' }}
+      </button>
+    </div>
+  </form>
+</div>

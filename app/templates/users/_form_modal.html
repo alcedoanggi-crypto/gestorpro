@@ -1,0 +1,37 @@
+{% from 'partials/_macros.html' import field %}
+<div class="modal-content gp-modal">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fa-solid {{ 'fa-pen' if user else 'fa-user-plus' }} me-2"></i>
+      {{ 'Editar usuario' if user else 'Nuevo usuario' }}
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+  </div>
+
+  <form method="post" novalidate class="modal-ajax-form"
+        action="{{ url_for('users.edit', user_id=user.id) if user else url_for('users.create') }}">
+    {{ form.hidden_tag() }}
+    <div class="modal-body">
+      {% if form.errors %}
+        <div class="alert alert-danger py-2 small mb-3">
+          <i class="fa-solid fa-circle-exclamation me-1"></i>Revisa los campos marcados.
+        </div>
+      {% endif %}
+      <div class="row g-3">
+        {{ field(form.name, cols="col-md-6") }}
+        {{ field(form.email, cols="col-md-6") }}
+        {{ field(form.job_title, cols="col-md-6") }}
+        {{ field(form.role_id, cols="col-md-6") }}
+        {{ field(form.password, cols="col-md-6",
+                 placeholder=("Dejar vacio para no cambiar" if user else "Se genera una si se deja vacia")) }}
+        {{ field(form.is_active, cols="col-md-6") }}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check me-1"></i>{{ 'Guardar cambios' if user else 'Crear usuario' }}
+      </button>
+    </div>
+  </form>
+</div>
