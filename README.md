@@ -1,160 +1,163 @@
-# GestorPro — Sistema de Gestión de Proyectos
+<div align="center">
 
-Aplicación web MVC construida con **Flask + SQLAlchemy + PostgreSQL**, con dashboard
-dinámico, diagrama de Gantt interactivo, reportes con gráficos, exportación a PDF/Excel,
-notificaciones y control de acceso por roles.
+# 🗂️ GestorPro
 
-## Arquitectura (MVC)
+### Plataforma de gestión de proyectos, tareas y equipos — construida de principio a fin con Flask
+
+Cronograma de Gantt interactivo · Dashboard con métricas en vivo · Reportes exportables a PDF/Excel · Control de acceso por roles · Interfaz con modales AJAX y modo oscuro
+
+<br>
+
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.1-000000?style=for-the-badge&logo=flask&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
+
+</div>
+
+<br>
+
+<p align="center">
+  <img src="docs/img/02-dashboard.png" alt="Dashboard de GestorPro" width="900">
+</p>
+
+<br>
+
+## 💡 Sobre el proyecto
+
+**GestorPro** es una aplicación web completa para planificar y hacer seguimiento de proyectos: crear proyectos y tareas, asignarlas a equipos, visualizar el avance en un diagrama de Gantt, medir el cumplimiento de plazos y exportar reportes para presentar a dirección.
+
+Lo desarrollé **sin frameworks de frontend**: solo Flask, Jinja2 y JavaScript puro, con una arquitectura **MVC** limpia (modelos, controladores como *blueprints*, servicios de negocio y vistas) y una capa de permisos por objeto y por rol.
+
+<br>
+
+## ✨ Funcionalidades
+
+| Área | Detalle |
+|------|---------|
+| 📊 **Dashboard** | KPIs (proyectos activos, tareas pendientes / por vencer / retrasadas), gráfico de completadas por mes y anillo de estados, mis tareas y proyectos recientes |
+| 📅 **Gantt interactivo** | Cronograma por proyecto con dependencias entre tareas, vistas Día / Semana / Mes y **arrastrar-y-soltar de fechas** persistido por API JSON |
+| 🧾 **Reportes** | Progreso por proyecto, carga de trabajo por persona, cumplimiento de plazos y distribución de estados/prioridades · exportación a **Excel** (openpyxl) y **PDF** (ReportLab) |
+| 🗒️ **CRUD en modales** | Alta/edición/baja de proyectos, tareas, equipos y usuarios **sin recargar la página**: formulario cargado por AJAX, validación del servidor mostrada dentro del modal y confirmaciones con *toast* |
+| 🧭 **Cronograma en PDF** | Cada proyecto genera su Gantt como PDF vectorial (barras por estado, % de avance, marca de "hoy") |
+| 🔐 **Autenticación** | Hash `pbkdf2:sha256`, sesiones con Flask-Login, protección CSRF, recuperación de contraseña por token con expiración y respuesta anti-enumeración |
+| 🔔 **Notificaciones** | Al asignar o comentar tareas, más un *scanner* de vencimientos pensado para ejecutarse por cron |
+| 🌗 **UI** | Bootstrap 5.3 + Font Awesome, modo claro/oscuro con variables CSS y preferencia guardada, sidebar que se adapta al rol y es colapsable en móvil |
+
+<br>
+
+## 🖼️ Capturas
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/img/01-login.png" alt="Login split-screen"><br><sub><b>Login</b> — pantalla dividida con ilustración animada de un tablero Kanban</sub></td>
+    <td width="50%"><img src="docs/img/03-proyecto-gantt.png" alt="Proyecto con Gantt"><br><sub><b>Proyecto</b> — cronograma de Gantt con dependencias y exportación a PDF</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/img/04-modal.png" alt="Modal de nueva tarea"><br><sub><b>Modales AJAX</b> — crear/editar sin salir de la página</sub></td>
+    <td width="50%"><img src="docs/img/05-reportes.png" alt="Reportes con gráficos"><br><sub><b>Reportes</b> — gráficos con Chart.js y exportación a Excel/PDF</sub></td>
+  </tr>
+</table>
+
+<br>
+
+## 🛠️ Stack técnico
+
+| Capa | Tecnologías |
+|------|-------------|
+| **Backend** | Python · Flask 3 · SQLAlchemy 2 · Flask-Login · Flask-WTF · Flask-Migrate · Flask-Mail |
+| **Base de datos** | PostgreSQL (psycopg 3) · SQLite en memoria para los tests |
+| **Frontend** | Jinja2 · Bootstrap 5.3 · JavaScript ES5 sin dependencias · Chart.js · Frappe Gantt |
+| **Reportes** | openpyxl (Excel) · ReportLab (PDF + dibujo del Gantt) |
+| **Calidad** | pytest · Gunicorn para producción |
+
+<br>
+
+## 🏗️ Arquitectura (MVC)
 
 ```
-gestorpro/
-├── wsgi.py                  # punto de entrada
-├── requirements.txt
-├── .env.example
-├── app/
-│   ├── __init__.py          # application factory (wiring)
-│   ├── config.py            # configuración por entorno
-│   ├── extensions.py        # instancias de db, login, csrf, mail, migrate
-│   ├── seeds.py             # datos de demostración (flask seed)
-│   │
-│   ├── models/              # ── M ── capa de datos (SQLAlchemy)
-│   │   ├── enums.py         # estados y prioridades de dominio
-│   │   ├── role.py          # roles: admin / gerente / colaborador
-│   │   ├── user.py          # usuarios + hash de contraseña + token de reseteo
-│   │   ├── team.py          # equipos (N:M con usuarios)
-│   │   ├── project.py       # proyectos + métricas derivadas
-│   │   ├── task.py          # tareas + dependencias (Gantt) + comentarios
-│   │   ├── comment.py
-│   │   └── notification.py
-│   │
-│   ├── controllers/         # ── C ── blueprints (rutas / lógica de request)
-│   │   ├── auth.py          # login, registro, logout, recuperación
-│   │   ├── dashboard.py
-│   │   ├── projects.py      # CRUD + vista de cronograma
-│   │   ├── tasks.py         # CRUD + cambio de estado + comentarios
-│   │   ├── users.py         # CRUD de usuarios + perfil
-│   │   ├── teams.py         # CRUD de equipos
-│   │   ├── reports.py       # gráficos + exportación PDF/Excel
-│   │   └── api.py           # JSON: Gantt drag&drop, notificaciones
-│   │
-│   ├── services/            # lógica de negocio reutilizable
-│   │   ├── report_service.py       # agregaciones para Chart.js
-│   │   ├── export_service.py       # openpyxl + reportlab
-│   │   ├── notification_service.py  # generación / scanner de vencimientos
-│   │   └── mail_service.py
-│   │
-│   ├── forms/               # validación (Flask-WTF)
-│   ├── utils/               # decoradores de rol, permisos de objeto, scoping
-│   │
-│   ├── templates/           # ── V ── vistas (Jinja2 + Bootstrap 5)
-│   │   ├── base.html        # layout, tema claro/oscuro, sidebar por rol
-│   │   ├── partials/        # sidebar, topbar, flash, macros
-│   │   ├── auth/  dashboard/  projects/  tasks/  users/  teams/  reports/  errors/
-│   │
-│   └── static/
-│       ├── css/style.css    # diseño minimalista + modo oscuro (CSS vars)
-│       └── js/  app.js · dashboard.js · gantt.js · reports.js
-└── tests/                   # pytest (SQLite en memoria)
+app/
+├── __init__.py          application factory
+├── config.py            configuración por entorno
+├── extensions.py        db · login · csrf · mail · migrate
+│
+├── models/          ── M ──  SQLAlchemy: role, user, team, project, task, comment, notification
+├── controllers/     ── C ──  blueprints: auth, dashboard, projects, tasks, teams, users, reports, api
+├── services/                 lógica de negocio: report_service, export_service, notification_service, mail_service
+├── forms/                    validación con Flask-WTF
+├── utils/                    decoradores de rol · permisos de objeto · scoping · helpers de modales
+│
+├── templates/       ── V ──  Jinja2: base + partials + una carpeta por módulo (incl. `_form_modal.html`)
+└── static/                   css/style.css (paleta + modo oscuro) · js/ (app, dashboard, gantt, reports, modal-form)
+
+tests/                        pytest sobre SQLite en memoria
 ```
 
-### Roles y permisos
+<br>
 
-| Rol         | Alcance |
-|-------------|---------|
-| **admin**       | Todo: usuarios, equipos, todos los proyectos y reportes |
-| **gerente**     | Sus proyectos, sus equipos, tareas y reportes |
-| **colaborador** | Solo las tareas que tiene asignadas y los proyectos donde participa |
+## 🔐 Roles y permisos
 
-El **sidebar se genera dinámicamente** según el rol. El primer usuario registrado
-se convierte en `admin` automáticamente.
+| Rol | Alcance |
+|-----|---------|
+| **Admin** | Todo: usuarios, equipos, todos los proyectos y reportes |
+| **Gerente** | Sus proyectos y equipos, tareas y reportes |
+| **Colaborador** | Solo las tareas asignadas y los proyectos donde participa |
 
-## Puesta en marcha
+El **menú lateral se genera según el rol** y el primer usuario registrado se vuelve `admin` automáticamente.
 
-### 1. Requisitos
-- Python 3.10+
-- PostgreSQL 13+ (o SQLite para pruebas)
+<br>
 
-### 2. Instalación
+## 🚀 Puesta en marcha
 
 ```bash
+git clone https://github.com/alcedoanggi-crypto/gestorpro.git
 cd gestorpro
-python -m venv .venv
-# Windows:  .venv\Scripts\activate     Linux/Mac:  source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env          # y edita DATABASE_URL, SECRET_KEY, SMTP...
-# El driver es psycopg 3 -> la URL usa el prefijo postgresql+psycopg://
-```
 
-### 3. Base de datos PostgreSQL
+python -m venv .venv
+.venv\Scripts\activate            # Windows   ·   source .venv/bin/activate en Linux/Mac
+pip install -r requirements.txt
+
+copy .env.example .env            # edita SECRET_KEY y DATABASE_URL
+```
 
 ```sql
-CREATE DATABASE gestorpro;
+CREATE DATABASE gestorpro;        -- PostgreSQL
 ```
 
 ```bash
-# Opción A — rápida (crea tablas + roles)
-flask init-db
-
-# Opción B — con migraciones versionadas
-flask db init
-flask db migrate -m "esquema inicial"
-flask db upgrade
+flask init-db                     # crea tablas + roles
+flask seed                        # datos de demostración (opcional)
+python wsgi.py                    # http://localhost:5000
 ```
 
-### 4. Datos de demostración (opcional)
+**Usuarios de demo** (contraseña `Demo1234`):
 
-```bash
-flask seed
-```
+| Correo | Rol |
+|--------|-----|
+| `admin@demo.com` | admin |
+| `gerente@demo.com` | gerente |
+| `diego@demo.com` | colaborador |
 
-Usuarios de prueba (contraseña `Demo1234`):
+<br>
 
-| Correo             | Rol         |
-|--------------------|-------------|
-| admin@demo.com     | admin       |
-| gerente@demo.com   | gerente     |
-| diego@demo.com     | colaborador |
-
-### 5. Ejecutar
-
-```bash
-flask run           # http://localhost:5000
-# producción:  gunicorn wsgi:app
-```
-
-## Funcionalidades
-
-- **Autenticación**: hash `pbkdf2:sha256` (Werkzeug), sesiones con Flask-Login,
-  protección CSRF, recuperación de contraseña por token con expiración (1 h),
-  respuesta anti-enumeración de usuarios.
-- **Dashboard**: tarjetas resumen (proyectos activos, tareas pendientes, por vencer,
-  retrasadas), gráfico de línea de completadas por mes y doughnut de estados,
-  lista de tareas propias y proyectos recientes.
-- **Gantt interactivo** (Frappe Gantt): cronograma por proyecto con dependencias,
-  cambio de vista Día/Semana/Mes y **arrastrar-y-soltar de fechas** persistido vía
-  `POST /api/tasks/<id>/schedule`.
-- **Reportes** (Chart.js): progreso por proyecto, carga de trabajo por usuario,
-  distribución de estados/prioridades, cumplimiento de plazos y serie mensual.
-- **Exportación**: Excel (`openpyxl`, hojas de proyectos y tareas) y PDF
-  (`reportlab`, resumen + detalle).
-- **CRUD completo** de proyectos, tareas, usuarios y equipos con validación.
-- **Notificaciones**: al asignar tareas, al comentar y un scanner de vencimientos
-  (`flask scan-notifications`) pensado para un cron:
-
-  ```
-  */30 * * * *  cd /ruta/gestorpro && .venv/bin/flask scan-notifications
-  ```
-
-## UI/UX
-
-- Bootstrap 5.3 + Font Awesome 6, tipografía Inter.
-- **Modo claro/oscuro** con `data-bs-theme` y variables CSS, preferencia en `localStorage`.
-- Layout responsive con sidebar colapsable en móvil.
-
-## Tests
+## 🧪 Tests
 
 ```bash
 pytest
 ```
 
-Usan SQLite en memoria (`TESTING`), sin necesidad de PostgreSQL.
+Se ejecutan sobre SQLite en memoria — no necesitan PostgreSQL.
+
+<br>
+
+---
+
+<div align="center">
+
+**Anggie Alcedo** · Desarrolladora de software
+
+[![GitHub](https://img.shields.io/badge/GitHub-alcedoanggi--crypto-181717?style=flat&logo=github)](https://github.com/alcedoanggi-crypto)
+
+</div>
